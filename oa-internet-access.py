@@ -2,6 +2,8 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -61,19 +63,20 @@ def yahoosearch(num_results, query):
     
 print("Login to Open Assistant with your E-Mail with this link: https://open-assistant.io/auth/signin")
 link = input("Copy the invite link from the email here (right click on sign in, copy link location): ")
-def newchat():
-   print("Starting new Chat...")
-   newchatbutton = driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div[2]/div[1]/div/div[1]/button")
-   newchatbutton.click()
-   time.sleep(4)
-   modelselect = driver.find_element(By.XPATH, "//*[text()='OA_SFT_Llama_30B_6']")
-   modelselect = modelselect.find_element(By.XPATH, "..")
-   modelselect_select = Select(modelselect)
-   modelselect_select.select_by_value("OA_RLHF_Llama_30B_2_7k")
-   presetselect = driver.find_element(By.XPATH, "//*[text()='k50']")
-   presetselect = presetselect.find_element(By.XPATH, "..")
-   presetselect_select = Select(presetselect)
-   presetselect_select.select_by_value("k50-Precise")
+def newchat(isinmenu=True):
+    print("Starting new Chat...")
+    if not isinmenu:
+      driver.back()
+    newchatbutton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div/div[2]/div[1]/div/div[1]/button")))
+    newchatbutton.click()
+    modelselect = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[text()='OA_SFT_Llama_30B_6']")))
+    modelselect = modelselect.find_element(By.XPATH, "..")
+    modelselect_select = Select(modelselect)
+    modelselect_select.select_by_value("OA_RLHF_Llama_30B_2_7k")
+    presetselect = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[text()='k50']")))
+    presetselect = presetselect.find_element(By.XPATH, "..")
+    presetselect_select = Select(presetselect)
+    presetselect_select.select_by_value("k50-Precise")
 print("Launching Firefox and opening Open Assistant...")
 driver = webdriver.Firefox(executable_path=webdriver_path)
 driver.minimize_window()
@@ -82,7 +85,7 @@ newchat()
 while True:
     userprompt = input("Prompt (type \"newchat\" to start a new chat): ")
     if userprompt.lower() == "newchat":
-       newchat()
+       newchat(isinmenu=False)
        continue
     prompt = "Web search results\n\n "
     i=0
@@ -113,5 +116,4 @@ while True:
 input("")
 driver.implicitly_wait(5)
 driver.quit()
-
 
